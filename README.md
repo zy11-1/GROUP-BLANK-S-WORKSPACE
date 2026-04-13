@@ -24,7 +24,7 @@ Push notification engine (Firebase Cloud Messaging)
 In-app notification inbox and history
 Customizable arrival alerts (configurable distance thresholds)
 Do-not-disturb scheduling and priority-based notification tiers
-<br><br
+<br><br>
 3 — Route Recommender (Pin-to-Pin)
 Purpose: Smart trip planning based on user start and end points.
 Functionality:Students drop pins at their current location and destination. The system recommends the optimal bus route, boarding stop, walking distance, and estimated time of arrival (ETA).
