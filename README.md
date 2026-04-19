@@ -48,3 +48,5 @@ Historical occupancy patterns (e.g., "This bus is usually full at 8AM")
 Passenger-side occupancy feedback mechanism
 Predictive crowding alerts based on historical data
 <br><br>
+<br><br><br><br>
+📅📅📅4.19 PROPOSAL FINISHED AND PROJECT PLAN design📅📅📅
