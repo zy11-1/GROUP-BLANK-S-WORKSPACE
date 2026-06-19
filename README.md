@@ -49,6 +49,3 @@ Passenger-side occupancy feedback mechanism
 Predictive crowding alerts based on historical data
 <br><br>
 <br><br><br><br>
-📅📅📅4.19 PROPOSAL FINISHED AND PROJECT PLAN design📅📅📅
-<br>
-Confirmation of Member Responsibilities and Task stage confirmation
