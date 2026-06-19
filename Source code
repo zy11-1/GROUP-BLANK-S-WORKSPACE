@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>UTM Bus Tracker · Full High-Fidelity Prototype</title>
+  <script>
+    window.tailwind = window.tailwind || {};
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "surface-bright": "#f7f9fb",
+            "surface": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f4f6",
+            "surface-container": "#eceef0",
+            "surface-container-high": "#e6e8ea",
+            "surface-container-highest": "#e0e3e5",
+            "primary": "#004ac6",
+            "primary-container": "#2563eb",
+            "secondary": "#515f74",
+            "secondary-container": "#d5e3fc",
+            "tertiary": "#943700",
+            "tertiary-container": "#bc4800",
+            "tertiary-fixed": "#ffdbcd",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6",
+            "outline": "#737686",
+            "outline-variant": "#c3c6d7",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#434655",
+            "on-primary": "#ffffff",
+            "on-secondary-container": "#57657a",
+            "on-tertiary-container": "#ffede6",
+            "on-error-container": "#93000a"
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f7f9fb; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+    .fill-icon { font-variation-settings: 'FILL' 1; }
+    .glass-panel { background: rgba(255,255,255,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226,232,240,0.6); }
+    .bus-pulse { animation: pulse-ring 1.8s cubic-bezier(0.215,0.61,0.355,1) infinite; }
+    @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(2); opacity: 0; } }
+    .page { display: none; animation: fadeUp 0.25s ease; }
+    .page.active { display: block; }
+    @keyframes fadeUp { 0% { opacity:0.6; transform:translateY(12px); } 100% { opacity:1; transform:translateY(0); } }
+    .bottom-nav a { transition: all 0.15s ease; }
+    .bottom-nav a.active-tab { background: #d5e3fc; color: #004ac6; border-radius: 9999px; padding: 4px 16px; }
+    .bottom-nav a.active-tab .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .tap-hint { transition: transform 0.1s; cursor: pointer; }
+    .tap-hint:active { transform: scale(0.97); }
+    .role-badge { background: #004ac6; color: white; font-size: 10px; padding: 2px 10px; border-radius: 999px; font-weight: 600; }
+    .toast { position: fixed; left: 50%; bottom: 86px; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; transition: 0.22s ease; z-index: 80; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="max-w-[420px] mx-auto bg-surface-bright min-h-screen relative">
+
+  <!-- ========== Top App Bar ========== -->
+  <header class="sticky top-0 z-50 bg-surface/95 backdrop-blur-sm border-b border-outline-variant px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-2xl">directions_bus</span>
+      <h1 class="font-bold text-primary text-lg tracking-tight">UTM Bus Tracker</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="roleDisplay" class="role-badge">Student</span>
+      <button class="material-symbols-outlined text-on-surface-variant p-1 rounded-full hover:bg-surface-container" onclick="toggleRoleMenu()">expand_more</button>
+    </div>
+  </header>
+
+  <!-- ========== Role Switcher Dropdown ========== -->
+  <div id="roleMenu" class="absolute top-14 right-4 bg-white shadow-xl rounded-xl border border-outline-variant p-2 z-50 hidden w-40">
+    <div class="flex flex-col gap-1">
+      <button class="text-left px-3 py-2 rounded-lg hover:bg-surface-container text-sm font-medium" onclick="switchRole('student')">👤 Student</button>
+      <button class="text-left px-3 py-2 rounded-lg hover:bg-surface-container text-sm font-medium" onclick="switchRole('driver')">🚌 Driver</button>
+      <button class="text-left px-3 py-2 rounded-lg hover:bg-surface-container text-sm font-medium" onclick="switchRole('admin')">⚙️ Admin</button>
+    </div>
+  </div>
+
+  <!-- ========== Page Container ========== -->
+  <div class="px-4 pb-28 pt-3 space-y-5">
+
+    <!-- ================================ -->
+    <!-- ====== Student Role Pages ====== -->
+    <!-- ================================ -->
+
+    <!-- Student Home -->
+    <div id="page-student-home" class="page active space-y-5">
+      <div class="bg-primary-container/10 p-5 rounded-2xl border border-primary/20">
+        <h2 class="text-2xl font-bold text-primary">Good morning, Alex 👋</h2>
+        <p class="text-on-surface-variant text-sm">Ready for your 9:00 AM lecture?</p>
+      </div>
+      <div class="flex items-center bg-white border border-outline-variant rounded-full px-4 py-3 shadow-sm tap-hint" onclick="navigateTo('student-planner')">
+        <span class="material-symbols-outlined text-outline mr-2">search</span>
+        <input class="bg-transparent border-none focus:ring-0 w-full text-sm placeholder-on-surface-variant/60 pointer-events-none" placeholder="Where to?" readonly>
+        <span class="material-symbols-outlined text-outline ml-2">mic</span>
+      </div>
+      <!-- Map Preview -->
+      <div class="relative h-52 rounded-xl overflow-hidden border border-outline-variant shadow-sm tap-hint" onclick="navigateTo('student-map')">
+        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLnyTkLfxIjDWHS6UAtZziBDMEvPJ9dWJ1Yi6Y4DIx7RjOAX33_pvHgh6Q4mJ7tdMgkyGIaMhZVZH9a1PUJylgUaJI_N6GpM365WCwgpwT02HcBJhRnwZiK26X7F3PPCnYBP89ysRHvYFFg-e2PX7FQh7FltMpdYLUxiMoGepxlpoyc0wAy5yzCUH-_JMKVOFGFivj_IGuhqOA3nLDfcUfMt9uZLz7PtxUKUcEiFpI7CVLXILIeIZ-eDEFy67CMO65wDnjPZJM1XxW" alt="campus map">
+        <div class="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur p-3 rounded-xl border flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="bg-primary text-white p-2 rounded-lg"><span class="material-symbols-outlined">directions_bus</span></div>
+            <div><p class="font-bold text-primary text-sm">NORTH LOOP · BUS 12</p><p class="text-xs text-on-surface-variant">Arriving in 4 min · Eng. Bldg</p></div>
+          </div>
+          <span class="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">LIVE</span>
+        </div>
+      </div>
+      <!-- Quick Access -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2 bg-white border border-outline-variant p-4 rounded-xl tap-hint flex items-center justify-between" onclick="navigateTo('student-planner')">
+          <div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">route</span><div><h4 class="font-semibold">Plan Route</h4><p class="text-xs text-on-surface-variant">Pin-to-pin journey</p></div></div>
+          <span class="material-symbols-outlined text-outline">arrow_forward_ios</span>
+        </div>
+        <div class="bg-white border border-outline-variant p-4 rounded-xl tap-hint" onclick="navigateTo('student-occupancy')">
+          <div class="flex justify-between"><span class="material-symbols-outlined text-secondary">groups</span><span class="bg-secondary-container text-xs font-bold px-2 py-0.5 rounded-full">MODERATE</span></div>
+          <p class="font-semibold text-sm mt-2">Live Occupancy</p>
+          <div class="w-full bg-surface-container h-1.5 rounded-full mt-1"><div class="bg-secondary h-1.5 rounded-full w-[65%]"></div></div>
+        </div>
+        <div class="bg-white border border-outline-variant p-4 rounded-xl tap-hint" onclick="navigateTo('student-alerts')">
+          <div class="flex justify-between"><span class="material-symbols-outlined text-tertiary">warning</span><span class="w-2 h-2 bg-tertiary rounded-full animate-pulse"></span></div>
+          <p class="font-semibold text-sm mt-2">Route A Detour</p>
+          <p class="text-[11px] text-on-surface-variant">Construction on Main St.</p>
+        </div>
+      </div>
+      <!-- Favorites -->
+      <div><p class="font-semibold text-sm mb-2">Favorites</p>
+        <div class="flex gap-2 overflow-x-auto no-scrollbar">
+          <div class="flex-shrink-0 bg-white border px-4 py-2 rounded-lg flex items-center gap-2 tap-hint"><span class="material-symbols-outlined text-primary fill-icon">home</span><span>Home to Quad</span></div>
+          <div class="flex-shrink-0 bg-white border px-4 py-2 rounded-lg flex items-center gap-2 tap-hint"><span class="material-symbols-outlined text-secondary">school</span><span>Tech Plaza</span></div>
+          <div class="flex-shrink-0 bg-white border px-4 py-2 rounded-lg flex items-center gap-2 tap-hint"><span class="material-symbols-outlined text-outline">add</span><span>Add New</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Live Map (UC001, UC003) -->
+    <div id="page-student-map" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-home')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Live Tracking</h2></div>
+      <div class="relative h-72 rounded-xl overflow-hidden border border-outline-variant">
+        <img class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcJC_qVGPKXAjJ2R5n38d6V8POZpvYwr7cXqzrrtvh56fi8vZO30UI8b-zftSJH-Ixxw9s-klIN5fms-xJKhQ7MyilsiOdpecSbBuWNS7E173sGQRX8nfZRONfRfOEwTeNgcnjy7Ystn9YzP4mQNwR7xlcfpJ2TAwVrJh8rDUWYrcwO025xhl9jiMUidSpaUV2pKP1tG26MfpQQdp9AmzvJSOWYqF7asA800L8s6xu_4CD8NeP_3XvvN7Gl8pV0O4o_q0lyHgaT331" alt="map">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"><div class="relative"><div class="bus-pulse absolute w-12 h-12 bg-secondary-container rounded-full opacity-40"></div><div class="bg-secondary-container w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-lg relative z-10"><span class="material-symbols-outlined text-on-secondary-container fill-icon">directions_bus</span></div></div></div>
+        <div class="absolute bottom-4 left-4 right-4 glass-panel p-3 rounded-xl flex justify-between items-center">
+          <div><p class="text-xs font-bold text-primary">North Loop · Bus #402</p><p class="text-sm font-semibold">ETA: 5:42</p></div>
+          <span class="bg-error-container text-error text-xs font-bold px-3 py-1 rounded-full">ON TIME</span>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border"><div class="flex items-center justify-between"><span class="bg-tertiary-container text-on-tertiary-container px-3 py-0.5 rounded-full text-xs font-bold">Arriving Next</span><span class="text-2xl font-bold">5:42</span></div><p class="text-sm text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-sm">location_on</span> North Loop · Vehicle #402</p></div>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl border tap-hint"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center font-bold text-primary">B</div><div><p class="font-semibold text-sm">Route B · Express</p><p class="text-xs text-on-surface-variant">To South Quad</p></div></div><div class="text-right"><p class="font-bold text-primary">12 <span class="text-xs">min</span></p><span class="text-[10px] bg-tertiary-fixed px-1.5 py-0.5 rounded font-bold">ON TIME</span></div></div>
+        <div class="flex items-center justify-between bg-white p-3 rounded-xl border tap-hint"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-surface-container-high rounded-lg flex items-center justify-center font-bold text-primary">A</div><div><p class="font-semibold text-sm">Route A · North Loop</p><p class="text-xs text-on-surface-variant">To Engineering Heights</p></div></div><div class="text-right"><p class="font-bold">25 <span class="text-xs">min</span></p><span class="text-[10px] bg-secondary-fixed px-1.5 py-0.5 rounded font-bold">Delayed</span></div></div>
+      </div>
+      <button class="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 tap-hint" onclick="navigateTo('student-planner')"><span class="material-symbols-outlined">directions</span> GET DIRECTIONS</button>
+    </div>
+
+    <!-- Student Route Planner (UC004, UC005) -->
+    <div id="page-student-planner" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-home')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Plan Route</h2></div>
+      <div class="bg-white p-5 rounded-xl border shadow-sm relative">
+        <div class="absolute left-[18px] top-10 bottom-10 w-0.5 border-l-2 border-dashed border-outline-variant"></div>
+        <div class="flex items-center gap-3 mb-5"><div class="w-6 h-6 rounded-full border-2 border-primary bg-white z-10 flex items-center justify-center"><div class="w-2 h-2 rounded-full bg-primary"></div></div><div class="flex-1"><label class="text-xs font-bold text-outline">Origin</label><input id="originInput" class="w-full bg-surface-container-low border rounded-lg px-3 py-2 text-sm" value="Engineering Hall"></div></div>
+        <div class="flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-primary z-10 flex items-center justify-center"><span class="material-symbols-outlined text-white text-sm">location_on</span></div><div class="flex-1"><label class="text-xs font-bold text-outline">Destination</label><input id="destinationInput" class="w-full bg-surface-container-low border rounded-lg px-3 py-2 text-sm" value="Student Union"></div></div>
+      </div>
+      <button class="w-full bg-primary text-white py-3 rounded-xl font-bold tap-hint" onclick="findBestRoute()">FIND BEST ROUTE</button>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-white p-3 rounded-xl border tap-hint"><span class="material-symbols-outlined text-primary">history</span><p class="font-semibold text-sm">Main Library</p><p class="text-xs text-on-surface-variant">2 min walk</p></div>
+        <div class="bg-white p-3 rounded-xl border tap-hint"><span class="material-symbols-outlined text-tertiary fill-icon">star</span><p class="font-semibold text-sm">Gym & Rec</p><p class="text-xs text-on-surface-variant">North Campus</p></div>
+        <div class="col-span-2 bg-white p-3 rounded-xl border flex items-center justify-between tap-hint"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline">work</span><div><p class="font-semibold text-sm">Science Lab Annex</p><p class="text-xs text-on-surface-variant">Frequent Route</p></div></div><span class="material-symbols-outlined text-outline">chevron_right</span></div>
+      </div>
+      <div class="relative h-40 rounded-xl overflow-hidden border tap-hint" onclick="navigateTo('stop-detail')">
+        <img class="w-full h-full object-cover opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfg-xNy68MaNQj6kQc8oygfsxKZUd8cl2Wt56_2l9A5SFrq1QmV3nv1zAemlnX5rQymC8DESQ9lAjSIP9RuWOTdMlMiut-4zMnlF5SLnYKSottEpmNFFOnGsmhUDRqSR755WkswhWv4Hh0Pf2WJ75nMrdmI7Xb1LFFB_n18d3HaUlPOmSGqH1PPBQLBingGKnILDJ1cqGxqXwCxAGw0yqJFRIpo88UFr6PSWShgPoUOr3eARjRBvZrYvadKG52hp4ewq9_dR4lLAt_" alt="map">
+        <div class="absolute bottom-2 left-2 right-2 glass-panel p-2 rounded-xl flex justify-between items-center"><span><span class="font-bold text-sm">Optimal Path</span><span class="text-xs block text-on-surface-variant">12 min · Bus + walk</span></span><span class="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">FASTEST</span></div>
+      </div>
+    </div>
+
+    <!-- Recommended Route Result (UC005) -->
+    <div id="page-recommended-route" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-planner')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Recommended Route</h2></div>
+      <div class="relative h-52 rounded-xl overflow-hidden border">
+        <img class="w-full h-full object-cover opacity-75" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfg-xNy68MaNQj6kQc8oygfsxKZUd8cl2Wt56_2l9A5SFrq1QmV3nv1zAemlnX5rQymC8DESQ9lAjSIP9RuWOTdMlMiut-4zMnlF5SLnYKSottEpmNFFOnGsmhUDRqSR755WkswhWv4Hh0Pf2WJ75nMrdmI7Xb1LFFB_n18d3HaUlPOmSGqH1PPBQLBingGKnILDJ1cqGxqXwCxAGw0yqJFRIpo88UFr6PSWShgPoUOr3eARjRBvZrYvadKG52hp4ewq9_dR4lLAt_" alt="recommended route map">
+        <div class="absolute left-8 right-8 top-1/2 h-1 bg-primary rounded-full rotate-[-8deg] shadow"></div>
+        <div class="absolute left-8 top-[58%] w-4 h-4 bg-white border-4 border-primary rounded-full"></div>
+        <div class="absolute right-10 top-[39%] w-5 h-5 bg-primary rounded-full border-4 border-white"></div>
+      </div>
+      <div class="bg-white rounded-xl border p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div><p class="text-xs text-outline">FASTEST ROUTE</p><h3 id="routeResultTitle" class="text-xl font-bold text-primary">Engineering Hall to Student Union</h3></div>
+          <span class="bg-secondary-container text-primary text-xs font-bold px-3 py-1 rounded-full">18 MIN</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-4 text-center">
+          <div class="bg-surface-container-low rounded-lg p-2"><p class="font-bold">6 min</p><p class="text-[10px] text-on-surface-variant">Walk</p></div>
+          <div class="bg-surface-container-low rounded-lg p-2"><p class="font-bold">9 min</p><p class="text-[10px] text-on-surface-variant">Ride</p></div>
+          <div class="bg-surface-container-low rounded-lg p-2"><p class="font-bold">Moderate</p><p class="text-[10px] text-on-surface-variant">Crowd</p></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border p-4 space-y-4">
+        <div class="flex gap-3"><span class="material-symbols-outlined text-outline">directions_walk</span><div><p class="font-semibold text-sm" id="routeStartLabel">Walk from Engineering Hall</p><p class="text-xs text-on-surface-variant">6 min to Library North Gate stop</p></div></div>
+        <div class="flex gap-3"><span class="material-symbols-outlined text-primary">directions_bus</span><div><p class="font-semibold text-sm">Route A - North Loop</p><p class="text-xs text-on-surface-variant">Bus arrives in 3 min, occupancy moderate</p></div></div>
+        <div class="flex gap-3"><span class="material-symbols-outlined text-error">location_on</span><div><p class="font-semibold text-sm" id="routeEndLabel">Arrive at Student Union</p><p class="text-xs text-on-surface-variant">Destination on the left</p></div></div>
+      </div>
+      <button class="w-full bg-primary text-white py-3 rounded-xl font-bold tap-hint" onclick="showToast('Journey started. Live guidance enabled.')">START JOURNEY</button>
+    </div>
+
+    <!-- Student Live Occupancy (UC010, UC012) -->
+    <div id="page-student-occupancy" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-home')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Live Occupancy</h2></div>
+      <div class="relative"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span><input class="w-full bg-white border rounded-xl pl-10 pr-4 py-3 text-sm" placeholder="Search route or stop..."></div>
+      <div class="grid grid-cols-1 gap-3">
+        <div class="bg-white p-4 rounded-xl border flex flex-col"><div class="flex justify-between"><div><span class="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded">Route A</span><span class="text-xs ml-1">North Loop</span><h4 class="font-semibold">Bus #4412</h4></div><span id="routeAStatus" class="bg-error text-white text-xs font-bold px-3 py-1 rounded-full">Crowded</span></div><div class="flex items-center justify-between mt-2"><div class="flex-1 mr-4"><div class="flex justify-between text-xs"><span>Capacity</span><span id="routeACapacity" class="font-bold text-error">92%</span></div><div class="w-full h-2 bg-surface-container-highest rounded-full"><div id="routeABar" class="h-full bg-error rounded-full w-[92%]"></div></div><p id="routeAUpdated" class="text-[10px] text-on-surface-variant mt-1">Updated 1 min ago</p></div><div><p class="font-bold text-primary">2 MIN</p><p class="text-[10px] text-on-surface-variant">Arriving</p></div></div></div>
+        <div class="bg-white p-4 rounded-xl border flex flex-col"><div class="flex justify-between"><div><span class="bg-secondary text-white text-[10px] font-bold px-2 py-0.5 rounded">Route B</span><span class="text-xs ml-1">West Express</span><h4 class="font-semibold">Bus #1098</h4></div><span class="bg-tertiary-container text-white text-xs font-bold px-3 py-1 rounded-full">Moderate</span></div><div class="flex items-center justify-between mt-2"><div class="flex-1 mr-4"><div class="flex justify-between text-xs"><span>Capacity</span><span class="font-bold text-tertiary">54%</span></div><div class="w-full h-2 bg-surface-container-highest rounded-full"><div class="h-full bg-tertiary-container rounded-full w-[54%]"></div></div></div><div><p class="font-bold text-primary">5 MIN</p><p class="text-[10px] text-on-surface-variant">Arriving</p></div></div></div>
+        <div class="bg-white p-4 rounded-xl border flex flex-col"><div class="flex justify-between"><div><span class="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded">Route C</span><span class="text-xs ml-1">South Shuttle</span><h4 class="font-semibold">Bus #3321</h4></div><span class="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">Low</span></div><div class="flex items-center justify-between mt-2"><div class="flex-1 mr-4"><div class="flex justify-between text-xs"><span>Capacity</span><span class="font-bold text-emerald-600">18%</span></div><div class="w-full h-2 bg-surface-container-highest rounded-full"><div class="h-full bg-emerald-600 rounded-full w-[18%]"></div></div></div><div><p class="font-bold text-primary">12 MIN</p><p class="text-[10px] text-on-surface-variant">Arriving</p></div></div></div>
+      </div>
+      <!-- AI Prediction (UC012) -->
+      <div class="bg-primary-container/5 p-4 rounded-xl border border-primary/20"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary ai-pulse">auto_awesome</span><span class="font-bold text-primary">AI Insight: Peak at 8:30 AM</span></div><p class="text-xs text-on-surface-variant mt-1">High influx predicted. Consider 7:45 AM or 9:15 AM for lower occupancy.</p></div>
+    </div>
+
+    <!-- Student Alerts (UC008, UC009, UC009B) -->
+    <div id="page-student-alerts" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-home')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Alerts & Subscriptions</h2></div>
+      <div class="bg-white p-4 rounded-xl border space-y-3">
+        <div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold">A</div><div><p class="font-semibold text-sm">Route A - North Loop</p><p class="text-xs text-on-surface-variant">Delays, overcrowding</p></div></div><label class="relative inline-flex items-center cursor-pointer"><input checked class="sr-only peer" type="checkbox"><div class="w-10 h-5 bg-outline-variant peer-checked:bg-primary rounded-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div></label></div>
+        <div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-white font-bold">W</div><div><p class="font-semibold text-sm">West Express</p><p class="text-xs text-on-surface-variant">ETA & arrivals</p></div></div><label class="relative inline-flex items-center cursor-pointer"><input class="sr-only peer" type="checkbox"><div class="w-10 h-5 bg-outline-variant peer-checked:bg-primary rounded-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div></label></div>
+        <div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-tertiary rounded-lg flex items-center justify-center text-white font-bold">E</div><div><p class="font-semibold text-sm">East Housing Shuttle</p><p class="text-xs text-on-surface-variant">Late-night safety</p></div></div><label class="relative inline-flex items-center cursor-pointer"><input checked class="sr-only peer" type="checkbox"><div class="w-10 h-5 bg-outline-variant peer-checked:bg-primary rounded-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div></label></div>
+        <button class="w-full bg-primary text-white py-2 rounded-lg font-bold text-sm" onclick="saveSubscriptions()">Save Changes</button>
+      </div>
+      <!-- Notification Inbox (UC009B) -->
+      <div id="alertInbox" class="space-y-2">
+        <div class="bg-error-container p-3 rounded-xl flex gap-3 tap-hint"><div class="w-8 h-8 bg-error text-white rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-sm">warning</span></div><div><p class="font-bold text-sm text-on-error-container">URGENT: ROUTE A DELAY</p><p class="text-xs">Construction caused 15-min delay. Next at 14:15.</p></div></div>
+        <div class="bg-surface-container-low p-3 rounded-xl flex gap-3 tap-hint"><div class="w-8 h-8 bg-secondary-container rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-sm">person_pin_circle</span></div><div><p class="font-bold text-sm">ARRIVAL ALERT</p><p class="text-xs">West Express 2 min away from Student Union.</p></div></div>
+        <div class="bg-surface-container-low p-3 rounded-xl flex gap-3 tap-hint"><div class="w-8 h-8 bg-tertiary-fixed rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-sm">auto_awesome</span></div><div><p class="font-bold text-sm">PREDICTIVE INSIGHT</p><p class="text-xs">Tomorrow's peak earlier due to Athletics Rally.</p></div></div>
+        <div class="opacity-60 bg-surface-container-low p-3 rounded-xl flex gap-3"><div class="w-8 h-8 bg-outline-variant rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-sm">info</span></div><div><p class="font-bold text-sm">SCHEDULE UPDATE</p><p class="text-xs">New weekend hours for Housing Shuttle.</p></div></div>
+      </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- ====== Driver Role Pages ====== -->
+    <!-- ================================ -->
+
+    <!-- Driver Dashboard (UC002, UC011) -->
+    <div id="page-driver-dashboard" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-home')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Driver Dashboard</h2></div>
+      <div class="bg-white p-5 rounded-xl border shadow-sm">
+        <div class="flex items-center gap-3"><div class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-2xl">account_circle</span></div><div><p class="font-bold">Driver: Marcus J.</p><p class="text-sm text-on-surface-variant">Route A - North Loop</p></div></div>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="bg-surface-container p-3 rounded-lg"><p class="text-xs text-outline">Speed</p><p class="font-bold text-lg">24 MPH</p></div>
+          <div class="bg-surface-container p-3 rounded-lg"><p class="text-xs text-outline">Passengers</p><p class="font-bold text-lg">18 / 45</p></div>
+        </div>
+      </div>
+      <!-- UC002: Update GPS -->
+      <div class="bg-white p-4 rounded-xl border tap-hint" onclick="updateGps()">
+        <div class="flex items-center justify-between"><span class="font-semibold">📡 Update GPS Location</span><span class="material-symbols-outlined text-primary">refresh</span></div>
+        <p id="gpsTimestamp" class="text-xs text-on-surface-variant mt-1">Tap to send current GPS coordinates</p>
+      </div>
+      <!-- UC011: Update Occupancy -->
+      <div class="bg-white p-4 rounded-xl border">
+        <p class="font-semibold mb-2">Update Occupancy Status</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="py-2 bg-green-100 text-green-800 rounded-lg text-sm font-bold tap-hint" onclick="updateOccupancy('Empty')">Empty</button>
+          <button class="py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-bold tap-hint" onclick="updateOccupancy('Moderate')">Moderate</button>
+          <button class="py-2 bg-red-100 text-red-800 rounded-lg text-sm font-bold tap-hint" onclick="updateOccupancy('Full')">Full</button>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border flex items-center justify-between tap-hint" onclick="sendDelayAlert()"><span>Send Delay / Cancellation Alert</span><span class="material-symbols-outlined text-error">warning</span></div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- ====== Admin Role Pages ====== -->
+    <!-- ================================ -->
+
+    <!-- Admin Dashboard (UC006) -->
+    <div id="page-admin-dashboard" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-home')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Admin · Manage Stops</h2></div>
+      <button class="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 tap-hint" onclick="openStopForm()"><span class="material-symbols-outlined">add_location_alt</span> ADD NEW STOP</button>
+      <div id="adminStopList" class="space-y-3">
+      </div>
+      <!-- Map Preview -->
+      <div class="relative h-40 rounded-xl overflow-hidden border tap-hint">
+        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnm1QpfH9eRGeNMBltw7gjQUWhqczdbEBwmestS7jQXy2QO9dJF10tEFv33HG8axAmYdqnv09uFCREtEToG6gTFX1vq5Emc8LXV0Nusjc3bIf4nIMS5XhBejbfbwA5GiIqJawW72qXVn3B4zAeiDzZ13-rRn_4auknYAnMtV4M2rdr9WkSaSj1NW1-iv1DnmqMFoEaZpUQf2MVoNSH_qNgnSjBIlrB4XYoGPEfS2ehOemKEDXINPvBY80pbnNZElNwgnOEdyzvlrv-" alt="map">
+        <div class="absolute bottom-2 left-2 right-2 glass-panel p-2 rounded-xl flex justify-between items-center"><span class="font-bold text-sm">42 stops mapped</span><span class="text-primary text-sm font-bold">EXPAND MAP</span></div>
+      </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- ====== Stop Detail (UC007) ====== -->
+    <!-- ================================ -->
+    <div id="page-stop-detail" class="page space-y-4">
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-planner')"><span class="material-symbols-outlined">arrow_back</span></button><h2 class="font-bold text-lg">Stop Details</h2></div>
+      <div class="bg-white p-5 rounded-xl border">
+        <p class="text-xs text-outline">Student Union</p>
+        <p class="font-bold text-xl">Central Campus Plaza</p>
+        <div class="flex gap-2 mt-2"><span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Low Occupancy</span><span class="bg-surface-container-high text-xs px-2 py-0.5 rounded-full">ADA Accessible</span></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-primary-container/10 p-4 rounded-xl border"><p class="text-xs text-outline">Next Bus</p><p class="text-2xl font-bold">3 <span class="text-sm">min</span></p><p class="text-xs">Route A - North Loop</p></div>
+        <div class="bg-white p-4 rounded-xl border"><p class="text-xs text-outline">Following</p><p class="text-xl font-bold">12 <span class="text-sm">min</span></p><p class="text-xs text-tertiary">DELAYS EXPECTED</p></div>
+      </div>
+      <div class="bg-white rounded-xl border overflow-hidden">
+        <div class="p-4 border-b font-semibold">Passing Lines</div>
+        <div class="divide-y">
+          <div class="p-4 flex justify-between"><span>Route A - North Loop</span><span class="text-primary">Every 10 min</span></div>
+          <div class="p-4 flex justify-between"><span>Route C - West Express</span><span class="text-primary">Every 15 min</span></div>
+          <div class="p-4 flex justify-between"><span>Night Shuttle</span><span class="text-outline">Starts 8:00 PM</span></div>
+        </div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border"><p class="font-semibold">Nearby Facilities</p><div class="flex gap-4 mt-2"><span class="material-symbols-outlined">local_cafe</span><span class="material-symbols-outlined">atm</span><span class="material-symbols-outlined">wifi</span><span class="material-symbols-outlined">charging_station</span></div></div>
+    </div>
+
+  </div> <!-- end page container -->
+
+  <!-- ========== Bottom Navigation (dynamically rendered by role) ========== -->
+  <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto bg-surface-container-lowest/95 backdrop-blur-sm border-t border-outline-variant px-2 py-1 flex justify-around items-center h-16 z-50 bottom-nav">
+    <!-- Rendered by JavaScript -->
+  </nav>
+
+  <div id="toast" class="toast max-w-[390px] w-[calc(100%-32px)] bg-on-surface text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-xl"></div>
+
+  <div id="stopModal" class="fixed inset-0 z-[70] hidden items-end justify-center bg-black/30">
+    <div class="w-full max-w-[420px] bg-white rounded-t-2xl p-5 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 id="stopModalTitle" class="font-bold text-lg">Add Bus Stop</h3>
+        <button class="p-1 rounded-full hover:bg-surface-container" onclick="closeStopForm()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <input id="stopNameInput" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Stop name">
+      <input id="stopLocationInput" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Location / description">
+      <p id="stopFormError" class="hidden text-error text-xs font-semibold">Invalid bus stop information.</p>
+      <button class="w-full bg-primary text-white py-3 rounded-xl font-bold" onclick="saveStop()">SAVE STOP</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ========== Role and Navigation State ==========
+  let currentRole = 'student';  // 'student' | 'driver' | 'admin'
+  let currentPage = 'student-home';
+  let toastTimer;
+  let editingStopId = null;
+  let stops = [
+    { id: 1042, name: 'University Library', location: 'Main Entrance' },
+    { id: 1058, name: 'Engineering Quad', location: 'South Hall' },
+    { id: 1099, name: 'Student Union', location: 'Transit Hub' }
+  ];
+
+  // Page ID mapping
+  const pages = {
+    'student-home': 'page-student-home',
+    'student-map': 'page-student-map',
+    'student-planner': 'page-student-planner',
+    'student-occupancy': 'page-student-occupancy',
+    'student-alerts': 'page-student-alerts',
+    'recommended-route': 'page-recommended-route',
+    'driver-dashboard': 'page-driver-dashboard',
+    'admin-dashboard': 'page-admin-dashboard',
+    'stop-detail': 'page-stop-detail'
+  };
+
+  // Navigation bar configuration per role
+  const navConfig = {
+    student: [
+      { id: 'student-home', icon: 'dashboard', label: 'Home' },
+      { id: 'student-map', icon: 'map', label: 'Map' },
+      { id: 'student-planner', icon: 'route', label: 'Route' },
+      { id: 'student-occupancy', icon: 'groups', label: 'Occupancy' },
+      { id: 'student-alerts', icon: 'notifications', label: 'Alerts' }
+    ],
+    driver: [
+      { id: 'driver-dashboard', icon: 'dashboard', label: 'Dashboard' },
+      { id: 'student-map', icon: 'map', label: 'Map' },
+      { id: 'student-alerts', icon: 'notifications', label: 'Alerts' }
+    ],
+    admin: [
+      { id: 'admin-dashboard', icon: 'dashboard', label: 'Manage' },
+      { id: 'student-map', icon: 'map', label: 'Map' },
+      { id: 'student-planner', icon: 'route', label: 'Route' }
+    ]
+  };
+
+  function renderNav(role) {
+    const nav = document.getElementById('bottomNav');
+    const items = navConfig[role] || navConfig.student;
+    nav.innerHTML = items.map(item => `
+      <a class="flex flex-col items-center justify-center text-on-surface-variant tap-hint ${currentPage === item.id ? 'active-tab' : ''}" data-page="${item.id}" onclick="navigateTo('${item.id}')">
+        <span class="material-symbols-outlined">${item.icon}</span>
+        <span class="text-[10px] font-bold">${item.label}</span>
+      </a>
+    `).join('');
+  }
+
+  // Navigation function
+  function navigateTo(pageId) {
+    const target = document.getElementById(pages[pageId]);
+    if (!target) return;
+
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    target.classList.add('active');
+    currentPage = pageId;
+
+    // Update role badge
+    document.getElementById('roleDisplay').textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+
+    // Re-render nav with active highlight
+    renderNav(currentRole);
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Role switcher
+  function switchRole(role) {
+    currentRole = role;
+    document.getElementById('roleDisplay').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    const firstPage = navConfig[role][0].id;
+    navigateTo(firstPage);
+    document.getElementById('roleMenu').classList.add('hidden');
+  }
+
+  function toggleRoleMenu() {
+    document.getElementById('roleMenu').classList.toggle('hidden');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function findBestRoute() {
+    const origin = document.getElementById('originInput').value.trim();
+    const destination = document.getElementById('destinationInput').value.trim();
+    if (!origin || !destination) {
+      showToast('Current location or destination is unavailable.');
+      return;
+    }
+    document.getElementById('routeResultTitle').textContent = origin + ' to ' + destination;
+    document.getElementById('routeStartLabel').textContent = 'Walk from ' + origin;
+    document.getElementById('routeEndLabel').textContent = 'Arrive at ' + destination;
+    navigateTo('recommended-route');
+  }
+
+  function saveSubscriptions() {
+    const enabled = document.querySelectorAll('#page-student-alerts input[type="checkbox"]:checked').length;
+    showToast(enabled + ' notification subscriptions saved.');
+  }
+
+  function updateGps() {
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('gpsTimestamp').textContent = 'GPS database updated at ' + now + ' for Bus #4412';
+    showToast('GPS updated successfully.');
+  }
+
+  function updateOccupancy(level) {
+    const config = {
+      Empty: { label: 'Low', percent: 18, badge: 'bg-emerald-600 text-white', text: 'text-emerald-600', bar: 'bg-emerald-600' },
+      Moderate: { label: 'Moderate', percent: 54, badge: 'bg-tertiary-container text-white', text: 'text-tertiary', bar: 'bg-tertiary-container' },
+      Full: { label: 'Crowded', percent: 92, badge: 'bg-error text-white', text: 'text-error', bar: 'bg-error' }
+    }[level];
+    const status = document.getElementById('routeAStatus');
+    const capacity = document.getElementById('routeACapacity');
+    const bar = document.getElementById('routeABar');
+    status.className = config.badge + ' text-xs font-bold px-3 py-1 rounded-full';
+    status.textContent = config.label;
+    capacity.className = 'font-bold ' + config.text;
+    capacity.textContent = config.percent + '%';
+    bar.className = 'h-full rounded-full ' + config.bar;
+    bar.style.width = config.percent + '%';
+    document.getElementById('routeAUpdated').textContent = 'Updated just now by driver';
+    showToast('Occupancy set to ' + level + '. Student view updated.');
+  }
+
+  function sendDelayAlert() {
+    const item = document.createElement('div');
+    item.className = 'bg-error-container p-3 rounded-xl flex gap-3 tap-hint';
+    item.innerHTML = '<div class="w-8 h-8 bg-error text-white rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-sm">warning</span></div><div><p class="font-bold text-sm text-on-error-container">NEW: ROUTE A DELAY</p><p class="text-xs">Driver reported a 10-min delay. Inbox updated just now.</p></div>';
+    document.getElementById('alertInbox').prepend(item);
+    showToast('Delay notification sent to subscribed students.');
+  }
+
+  function renderStops() {
+    const list = document.getElementById('adminStopList');
+    list.innerHTML = stops.map(stop => `
+      <div class="bg-white p-4 rounded-xl border flex items-center justify-between tap-hint">
+        <div><span class="text-xs text-outline">ID: ${stop.id}</span><p class="font-semibold">${stop.name}</p><span class="text-xs text-on-surface-variant">${stop.location}</span></div>
+        <div class="flex gap-2">
+          <button class="material-symbols-outlined text-primary" onclick="openStopForm(${stop.id})">edit_location</button>
+          <button class="material-symbols-outlined text-error" onclick="deleteStop(${stop.id})">delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openStopForm(id = null) {
+    editingStopId = id;
+    const stop = stops.find(s => s.id === id);
+    document.getElementById('stopModalTitle').textContent = stop ? 'Edit Bus Stop' : 'Add Bus Stop';
+    document.getElementById('stopNameInput').value = stop ? stop.name : '';
+    document.getElementById('stopLocationInput').value = stop ? stop.location : '';
+    document.getElementById('stopFormError').classList.add('hidden');
+    const modal = document.getElementById('stopModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeStopForm() {
+    const modal = document.getElementById('stopModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function saveStop() {
+    const name = document.getElementById('stopNameInput').value.trim();
+    const location = document.getElementById('stopLocationInput').value.trim();
+    if (!name || !location) {
+      document.getElementById('stopFormError').classList.remove('hidden');
+      return;
+    }
+    if (editingStopId) {
+      stops = stops.map(s => s.id === editingStopId ? { ...s, name, location } : s);
+      showToast('Bus stop information updated successfully.');
+    } else {
+      stops.unshift({ id: Math.floor(1100 + Math.random() * 800), name, location });
+      showToast('New bus stop added successfully.');
+    }
+    renderStops();
+    closeStopForm();
+  }
+
+  function deleteStop(id) {
+    stops = stops.filter(stop => stop.id !== id);
+    renderStops();
+    showToast('Bus stop removed from route database.');
+  }
+
+  // Initialize student role
+  renderStops();
+  switchRole('student');
+
+  // Close role menu when clicking outside
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('roleMenu');
+    if (!menu.contains(e.target) && !e.target.closest('[onclick="toggleRoleMenu()"]')) {
+      menu.classList.add('hidden');
+    }
+  });
+
+</script>
+
+</body>
+</html>
