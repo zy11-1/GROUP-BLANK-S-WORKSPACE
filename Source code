@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>UTM Bus Tracker · Complete high-fidelity prototype</title>
+  <title>UTM Bus Tracker · 完整高保真原型</title>
   <script>
     window.tailwind = window.tailwind || {};
     tailwind.config = {
@@ -273,7 +273,7 @@
         <div class="col-span-2 bg-white p-3 rounded-xl border flex items-center justify-between tap-hint"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline">work</span><div><p class="font-semibold text-sm text-on-surface">Science Lab Annex</p><p class="text-xs text-on-surface-variant">Frequent Route</p></div></div><span class="material-symbols-outlined text-outline">chevron_right</span></div>
       </div>
       <!-- Optimal Path Preview -->
-      <div class="relative h-40 rounded-xl overflow-hidden border tap-hint" onclick="navigateTo('stop-detail')">
+      <div class="relative h-40 rounded-xl overflow-hidden border tap-hint" onclick="navigateTo('recommended-route')">
         <img class="w-full h-full object-cover opacity-70" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfg-xNy68MaNQj6kQc8oygfsxKZUd8cl2Wt56_2l9A5SFrq1QmV3nv1zAemlnX5rQymC8DESQ9lAjSIP9RuWOTdMlMiut-4zMnlF5SLnYKSottEpmNFFOnGsmhUDRqSR755WkswhWv4Hh0Pf2WJ75nMrdmI7Xb1LFFB_n18d3HaUlPOmSGqH1PPBQLBingGKnILDJ1cqGxqXwCxAGw0yqJFRIpo88UFr6PSWShgPoUOr3eARjRBvZrYvadKG52hp4ewq9_dR4lLAt_" alt="map">
         <div class="absolute bottom-2 left-2 right-2 glass-panel p-2 rounded-xl flex justify-between items-center">
           <span><span class="font-bold text-sm text-on-surface">Optimal Path</span><span class="text-xs block text-on-surface-variant">12 min · Bus + walk</span></span>
@@ -303,10 +303,11 @@
         </div>
       </div>
       <div class="bg-white rounded-xl border p-4 space-y-4">
-        <div class="flex gap-3"><span class="material-symbols-outlined text-outline">directions_walk</span><div><p class="font-semibold text-sm text-on-surface" id="routeStartLabel">Walk from Engineering Hall</p><p class="text-xs text-on-surface-variant">6 min to Library North Gate stop</p></div></div>
-        <div class="flex gap-3"><span class="material-symbols-outlined text-primary">directions_bus</span><div><p class="font-semibold text-sm text-on-surface">Route A - North Loop</p><p class="text-xs text-on-surface-variant">Bus arrives in 3 min, occupancy moderate</p></div></div>
-        <div class="flex gap-3"><span class="material-symbols-outlined text-error">location_on</span><div><p class="font-semibold text-sm text-on-surface" id="routeEndLabel">Arrive at Student Union</p><p class="text-xs text-on-surface-variant">Destination on the left</p></div></div>
+        <div class="flex gap-3 tap-hint" onclick="navigateTo('stop-detail')"><span class="material-symbols-outlined text-outline">directions_walk</span><div><p class="font-semibold text-sm text-on-surface" id="routeStartLabel">Walk from Engineering Hall</p><p class="text-xs text-on-surface-variant">6 min to Library North Gate stop · Tap to view stop details</p></div></div>
+        <div class="flex gap-3 tap-hint" onclick="navigateTo('stop-detail')"><span class="material-symbols-outlined text-primary">directions_bus</span><div><p class="font-semibold text-sm text-on-surface">Route A - North Loop</p><p class="text-xs text-on-surface-variant">Bus arrives in 3 min, occupancy moderate · Tap to view stop details</p></div></div>
+        <div class="flex gap-3 tap-hint" onclick="navigateTo('stop-detail')"><span class="material-symbols-outlined text-error">location_on</span><div><p class="font-semibold text-sm text-on-surface" id="routeEndLabel">Arrive at Student Union</p><p class="text-xs text-on-surface-variant">Destination on the left · Tap to view stop details</p></div></div>
       </div>
+      <button class="w-full bg-secondary-container text-primary py-3 rounded-xl font-bold tap-hint flex items-center justify-center gap-2" onclick="navigateTo('stop-detail')"><span class="material-symbols-outlined">pin_drop</span> VIEW BUS STOP DETAILS</button>
       <button class="w-full bg-primary text-white py-3 rounded-xl font-bold tap-hint" onclick="showToast('Journey started. Live guidance enabled.')">START JOURNEY</button>
     </div>
 
@@ -393,7 +394,7 @@
     <!-- ====== Stop Detail (UC007) ====== -->
     <!-- ================================ -->
     <div id="page-stop-detail" class="page space-y-4">
-      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('student-planner')"><span class="material-symbols-outlined text-on-surface">arrow_back</span></button><h2 class="font-bold text-lg text-on-surface">Stop Details</h2></div>
+      <div class="flex items-center gap-2"><button class="p-1 rounded-full hover:bg-surface-container" onclick="navigateTo('recommended-route')"><span class="material-symbols-outlined text-on-surface">arrow_back</span></button><h2 class="font-bold text-lg text-on-surface">Stop Details</h2></div>
       <div class="bg-white p-5 rounded-xl border">
         <p class="text-xs text-outline">Student Union</p>
         <p class="font-bold text-xl text-on-surface">Central Campus Plaza</p>
